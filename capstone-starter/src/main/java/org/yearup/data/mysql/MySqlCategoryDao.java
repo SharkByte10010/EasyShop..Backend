@@ -32,6 +32,7 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao {
             ResultSet row = s.executeQuery();
             while (row.next()) {
                 Category category = mapRow(row);
+                categories.add(category);
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -43,16 +44,32 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao {
 
 
     @Override
-    public Category getById(int categoryId)
-    {
+    public Category getById(int categoryId) {
         // get category by id
-        return null;
+        String sql = "SELECT * FROM categories WHERE category_id = ?";
+
+        try ( Connection connection = getConnection();
+             PreparedStatement statement = getConnection().prepareStatement(sql)){
+
+            statement.setInt(1,categoryId);
+            ResultSet row = statement.executeQuery();
+            if (row.next()){
+                return  mapRow(row);
+            } else {
+                return null;
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
     }
+
 
     @Override
     public Category create(Category category)
     {
-        String sql = "INSERT INTO products(name, description) " +
+        String sql = "INSERT INTO categories(name, description) " +
                 " VALUES (?, ?);";
 
         try (Connection connection = getConnection())
@@ -69,10 +86,10 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao {
 
                 if (generatedKeys.next()) {
                     // Retrieve the auto-incremented ID
-                    int orderId = generatedKeys.getInt(1);
+                    int categoryId = generatedKeys.getInt(1);
 
                     // get the newly inserted category
-                    return getById(orderId);
+                    category.setCategoryId(categoryId);
                 }
             }
         }
@@ -80,23 +97,21 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao {
         {
             throw new RuntimeException(e);
         }
-        return null;
+        return category;
     }
 
     @Override
     public void update(int categoryId, Category category)
     {
-        String sql = "UPDATE products" +
+        String sql = "UPDATE categories" +
                 " SET name = ? " +
-                "   , description = ? " +
-                " WHERE categoryId = ?;";
+                "   , description = ?; ";
 
         try (Connection connection = getConnection())
         {
             PreparedStatement statement = connection.prepareStatement(sql);
             statement.setString(1, category.getName());
-            statement.setInt(2, category.getCategoryId());
-            statement.setString(3, category.getDescription());
+            statement.setString(2, category.getDescription());
 
             statement.executeUpdate();
         }
