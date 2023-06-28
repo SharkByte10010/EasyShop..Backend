@@ -1,6 +1,8 @@
 package org.yearup.data.mysql;
 //
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 import org.yearup.data.CategoryDao;
 import org.yearup.models.Category;
 
@@ -54,7 +56,7 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao {
             statement.setInt(1,categoryId);
             ResultSet row = statement.executeQuery();
             if (row.next()){
-                return  mapRow(row);
+                return mapRow(row);
             } else {
                 return null;
             }
@@ -113,6 +115,7 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao {
             statement.setString(1, category.getName());
             statement.setString(2, category.getDescription());
 
+
             statement.executeUpdate();
         }
         catch (SQLException e)
@@ -138,6 +141,7 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao {
             throw new RuntimeException(e);
         }
     }
+
 
 
     private Category mapRow(ResultSet row) throws SQLException
